@@ -13,9 +13,7 @@ AppDataSource.initialize().then(async () => {
     app.get('/', async (req: Request, res: Response) => {
         res.send('Привет от TypeScript сервера!');
 
-        const userRepo = AppDataSource.getRepository(User)
-        const users = await userRepo.find()
-        console.log(users)
+
 
     });
 
@@ -49,16 +47,24 @@ AppDataSource.initialize().then(async () => {
             }
         );
 
-        // Получаем почту и хэш пароля
-        // делаем запрос в базу данных,
+        // Получаем почту и пароль
+        // Хешируем пароль
+        // делаем запрос в базу данных по почте и хешу пароля,
         // если успешно найдены и хэш пароля и почта, то авторизация успешно
+        // Пользователь должен получить токен
 
     });
 
-    app.post('/getUserList', (req, res) => {
+    app.get('/getUserList', async (req, res) => {
+
+
+        const userRepository = AppDataSource.getRepository(User)
+        const users = await userRepository.find()
+        console.log(users);
         res.status(200).json(
             {
                 text: "getUserList successful!",
+                data: users
             }
         );
         // Только для админов
@@ -66,20 +72,44 @@ AppDataSource.initialize().then(async () => {
     });
 
 
-    app.get('/getUserById', (req, res) => {
+    app.get('/getUserById', async (req, res) => {
+        const data = req.body;
+        const UserId = data.UserId;
+
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ id: UserId });
+
+        if(!user){
+            res.status(404).json({error: 'Пользователь не найден'})
+            return;
+        }
+
         res.status(200).json(
             {
-                text: "getUserByID successful!",
+                user: user
             }
         );
         // возвращаем данные пользователя, если запрос пришёл от самого пользователя или от администратора
     });
 
 
-    app.post('/BlockUser', (req, res) => {
+    app.post('/BlockUser', async (req, res) => {
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({id: 3})
+
+        if(!user){
+            res.status(404).json({error: 'Пользователь не найден'})
+            return;
+        }
+
+        user.is_active = false;
+
+        await userRepository.save(user);
+
         res.status(200).json(
             {
                 text: "BlockUser successful!",
+                user: user
             }
         );
         // блокирует пользователя, если запрос пришёл от самого пользователя или от администратора
