@@ -1,6 +1,6 @@
 import express, {Request, Response} from 'express';
-import { AppDataSource } from "./data-source"
-import { User } from "./entity/User"
+import {AppDataSource} from "./data-source"
+import {User} from "./entity/User"
 import {isValidToken} from "./validationToken"
 import {authorization} from "./entity/authorization";
 
@@ -14,7 +14,6 @@ app.use(express.json());
 AppDataSource.initialize().then(async () => {
     app.get('/', async (req: Request, res: Response) => {
         res.send('Привет от TypeScript сервера!');
-
 
 
     });
@@ -42,33 +41,40 @@ AppDataSource.initialize().then(async () => {
 
     });
 
-    app.post('/authorization', (req, res) => {
+    app.post('/authorization', async (req, res) => {
         // isValidToken();
 
-        const data = req.body;
-
+        // const data = req.body;
+        const email = req.body.email;
+        const password = req.body.password;
 
         // запрос в бд, после полученные данные вставлять в user
 
+        // const userRepository = AppDataSource.getRepository(User);
+        // const userDB = await userRepository.findOneBy({id: UserId});
+
         const user = {
-            id: 1,
-            password: data.password,
-            email: data.email,
-            role: "user"
+            password: password,
+            email: email,
         }
 
-        const token = authorization(user);
+        const token = await authorization(user);
 
 
+        if (!token) {
+            res.status(500).json({
+                message: "User not found!"
+            })
+        }else{
+            res.status(200).json(
+                {
+                    text: "authorization successful!",
+                    token: token,
+                }
+            );
+        }
 
 
-
-        res.status(200).json(
-            {
-                text: "authorization successful!",
-                token: token,
-            }
-        );
 
         // Получаем почту и пароль
         // Хешируем пароль
@@ -83,10 +89,9 @@ AppDataSource.initialize().then(async () => {
 
         const token = req.body.token;
 
-        if(isValidToken(token)){
+        if (isValidToken(token)) {
 
             //сделать проверку, что это админ!!!!!!!!!
-
 
 
             const userRepository = AppDataSource.getRepository(User)
@@ -98,10 +103,9 @@ AppDataSource.initialize().then(async () => {
                     data: users
                 }
             );
-        }else{
+        } else {
             res.status(404).json({error: 'Не валидный токен'})
         }
-
 
 
         // Только для админов
@@ -115,12 +119,12 @@ AppDataSource.initialize().then(async () => {
         const token = data.token;
 
 
-        if(isValidToken(token)){
+        if (isValidToken(token)) {
 
             const userRepository = AppDataSource.getRepository(User);
-            const user = await userRepository.findOneBy({ id: UserId });
+            const user = await userRepository.findOneBy({id: UserId});
 
-            if(!user){
+            if (!user) {
                 res.status(404).json({error: 'Пользователь не найден'})
                 return;
             }
@@ -130,7 +134,7 @@ AppDataSource.initialize().then(async () => {
                     user: user
                 }
             );
-        }else{
+        } else {
             res.status(404).json({error: 'Не валидный токен'})
         }
 
@@ -143,7 +147,7 @@ AppDataSource.initialize().then(async () => {
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOneBy({id: 3})
 
-        if(!user){
+        if (!user) {
             res.status(404).json({error: 'Пользователь не найден'})
             return;
         }
@@ -165,5 +169,7 @@ AppDataSource.initialize().then(async () => {
         console.log(`✅ Сервер запущен: http://localhost:${PORT}`);
     });
 
-}).catch((err) => {console.log(err)});
+}).catch((err) => {
+    console.log(err)
+});
 
