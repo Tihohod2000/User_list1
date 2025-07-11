@@ -1,6 +1,8 @@
 import express, {Request, Response} from 'express';
 import { AppDataSource } from "./data-source"
 import { User } from "./entity/User"
+import {isValidToken} from "./validationToken"
+import {authorization} from "./entity/authorization";
 
 const PORT = 3000;
 
@@ -22,8 +24,8 @@ AppDataSource.initialize().then(async () => {
         const data = req.body;
         const login = data.login;
         const password = data.password;
-        console.log(login);
-        console.log(password);
+        // console.log(login);
+        // console.log(password);
 
         res.status(200).json({
             message: "GET request successful!",
@@ -41,9 +43,30 @@ AppDataSource.initialize().then(async () => {
     });
 
     app.post('/authorization', (req, res) => {
+        // isValidToken();
+
+        const data = req.body;
+
+
+        // запрос в бд, после полученные данные вставлять в user
+
+        const user = {
+            id: 1,
+            password: data.password,
+            email: data.email,
+            role: "user"
+        }
+
+        const token = authorization(user);
+
+
+
+
+
         res.status(200).json(
             {
                 text: "authorization successful!",
+                token: token,
             }
         );
 
@@ -58,15 +81,29 @@ AppDataSource.initialize().then(async () => {
     app.get('/getUserList', async (req, res) => {
 
 
-        const userRepository = AppDataSource.getRepository(User)
-        const users = await userRepository.find()
-        console.log(users);
-        res.status(200).json(
-            {
-                text: "getUserList successful!",
-                data: users
-            }
-        );
+        const token = req.body.token;
+
+        if(isValidToken(token)){
+
+            //сделать проверку, что это админ!!!!!!!!!
+
+
+
+            const userRepository = AppDataSource.getRepository(User)
+            const users = await userRepository.find()
+            console.log(users);
+            res.status(200).json(
+                {
+                    text: "getUserList successful!",
+                    data: users
+                }
+            );
+        }else{
+            res.status(404).json({error: 'Не валидный токен'})
+        }
+
+
+
         // Только для админов
         // возвращать список пользователей
     });
@@ -75,20 +112,29 @@ AppDataSource.initialize().then(async () => {
     app.get('/getUserById', async (req, res) => {
         const data = req.body;
         const UserId = data.UserId;
+        const token = data.token;
 
-        const userRepository = AppDataSource.getRepository(User);
-        const user = await userRepository.findOneBy({ id: UserId });
 
-        if(!user){
-            res.status(404).json({error: 'Пользователь не найден'})
-            return;
+        if(isValidToken(token)){
+
+            const userRepository = AppDataSource.getRepository(User);
+            const user = await userRepository.findOneBy({ id: UserId });
+
+            if(!user){
+                res.status(404).json({error: 'Пользователь не найден'})
+                return;
+            }
+
+            res.status(200).json(
+                {
+                    user: user
+                }
+            );
+        }else{
+            res.status(404).json({error: 'Не валидный токен'})
         }
 
-        res.status(200).json(
-            {
-                user: user
-            }
-        );
+
         // возвращаем данные пользователя, если запрос пришёл от самого пользователя или от администратора
     });
 
