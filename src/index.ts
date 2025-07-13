@@ -1,8 +1,10 @@
 import express, {Request, Response} from 'express';
 import {AppDataSource} from "./data-source"
 import {User} from "./entity/User"
-import {isValidToken} from "./validationToken"
-import {authorization} from "./entity/authorization";
+import {getIdFromToken, isAdmin, isValidToken} from "./validationToken"
+import {authorization} from "./authorization";
+import {registration} from "./registration";
+import {blockUser} from "./updataUser";
 
 const PORT = 3000;
 
@@ -19,17 +21,24 @@ AppDataSource.initialize().then(async () => {
     });
 
 
-    app.post('/registration', (req: Request, res: Response) => {
+    app.post('/registration', async (req: Request, res: Response) => {
         const data = req.body;
-        const login = data.login;
-        const password = data.password;
-        // console.log(login);
-        // console.log(password);
+        console.log(data);
 
-        res.status(200).json({
-            message: "GET request successful!",
-            // receivedText: text // Отправляем параметр обратно клиенту
-        });
+        const successful = await registration(data);
+
+        if(successful){
+            res.status(200).json({
+                message: "GET request successful!",
+                // receivedText: text // Отправляем параметр обратно клиенту
+            });
+        }
+
+        res.status(500).json({
+            message: "incorrect data"
+        })
+
+
 
         // Registration(login, password).then(r => {
         //     res.status(200).json({
@@ -58,18 +67,19 @@ AppDataSource.initialize().then(async () => {
             email: email,
         }
 
-        const token = await authorization(user);
+        const data = await authorization(user);
 
 
-        if (!token) {
+        if (!data) {
             res.status(500).json({
-                message: "User not found!"
+                message: "incorrect data or User not found!"
             })
         }else{
             res.status(200).json(
                 {
                     text: "authorization successful!",
-                    token: token,
+                    yourID: data.user.id,
+                    token: data.token,
                 }
             );
         }
@@ -92,17 +102,23 @@ AppDataSource.initialize().then(async () => {
         if (isValidToken(token)) {
 
             //сделать проверку, что это админ!!!!!!!!!
+            if(isAdmin(token)){
+                console.log("adminn")
+                const userRepository = AppDataSource.getRepository(User)
+                const users = await userRepository.find()
+                console.log(users);
+                res.status(200).json(
+                    {
+                        text: "getUserList successful!",
+                        data: users
+                    }
+                );
+            }else {
+                res.status(404).json({error: 'Ошибка доступа'})
+            }
 
 
-            const userRepository = AppDataSource.getRepository(User)
-            const users = await userRepository.find()
-            console.log(users);
-            res.status(200).json(
-                {
-                    text: "getUserList successful!",
-                    data: users
-                }
-            );
+
         } else {
             res.status(404).json({error: 'Не валидный токен'})
         }
@@ -144,24 +160,40 @@ AppDataSource.initialize().then(async () => {
 
 
     app.post('/BlockUser', async (req, res) => {
-        const userRepository = AppDataSource.getRepository(User);
-        const user = await userRepository.findOneBy({id: 3})
 
-        if (!user) {
-            res.status(404).json({error: 'Пользователь не найден'})
-            return;
+        const id = req.body.id;
+        const token = req.body.token;
+
+        if(!id || !token){
+            res.status(404).json({error: 'Ошибка'})
         }
 
-        user.is_active = false;
+        let userId = null;
+        let admin = false;
 
-        await userRepository.save(user);
 
-        res.status(200).json(
-            {
-                text: "BlockUser successful!",
-                user: user
+        if(isValidToken(token)) {
+            if(isAdmin(token)) {
+                admin = true
             }
-        );
+
+            if(!admin){
+                userId = getIdFromToken(token)
+                if(userId !== id){
+                    res.status(404).json({error: 'Ошибка доступа'})
+                    return;
+                }
+            }
+
+            await blockUser(id)
+
+
+
+            res.status(200).json({error: `Пользователь под id: ${id} заблокирован`})
+
+
+        }
+
         // блокирует пользователя, если запрос пришёл от самого пользователя или от администратора
     });
 
