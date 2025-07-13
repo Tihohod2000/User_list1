@@ -131,25 +131,33 @@ AppDataSource.initialize().then(async () => {
 
     app.get('/getUserById', async (req, res) => {
         const data = req.body;
-        const UserId = data.UserId;
+        const id = data.id;
         const token = data.token;
+        let userId;
+        let admin = false
 
 
-        if (isValidToken(token)) {
-
-            const userRepository = AppDataSource.getRepository(User);
-            const user = await userRepository.findOneBy({id: UserId});
-
-            if (!user) {
-                res.status(404).json({error: 'Пользователь не найден'})
-                return;
+        if(isValidToken(token)) {
+            if(isAdmin(token)) {
+                admin = true
             }
 
-            res.status(200).json(
-                {
-                    user: user
+            if(!admin){
+                userId = getIdFromToken(token)
+                if(userId !== id){
+                    res.status(404).json({error: 'Ошибка доступа'})
+                    return;
                 }
-            );
+            }
+
+
+            const userRepository = AppDataSource.getRepository(User);
+            const user = await userRepository.findOneBy({ id: id });
+
+            res.status(200).json({user: user})
+
+
+
         } else {
             res.status(404).json({error: 'Не валидный токен'})
         }
