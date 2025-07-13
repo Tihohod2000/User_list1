@@ -22,19 +22,16 @@ export async function registration(
 
 
     if (!userData) {
-        return undefined;
+        return 4;
     }
 
-    if(!userData.full_name) return undefined;
-    if(!userData.birth_date) return undefined;
-    if(!userData.email) return undefined;
-    if(!userData.password) return undefined;
+    if(!userData.full_name || !userData.birth_date || !userData.email || !userData.password) return 4;
 
     console.log("Всё есть!!!");
 
     if(userData.full_name.split(" ").length != 3) {
         console.log("ФИО должно состоять из 3 слов");
-        return undefined;
+        return 5;
     }
 
 
@@ -45,7 +42,7 @@ export async function registration(
     const existingUser = await userRepository.findOneBy({ email: userData.email });
     if (existingUser) {
         console.log("Пользователь с таким email уже существует");
-        return undefined;
+        return 2;
     }
 
     const newUser = new User();
@@ -59,6 +56,8 @@ export async function registration(
     await userRepository.save(newUser);
 
     console.log('Пользователь создан:', newUser);
+
+    return 1;
 
 
 

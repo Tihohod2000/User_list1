@@ -14,53 +14,51 @@ const app = express();
 app.use(express.json());
 
 AppDataSource.initialize().then(async () => {
-    app.get('/', async (req: Request, res: Response) => {
-        res.send('Привет от TypeScript сервера!');
-
-
-    });
-
 
     app.post('/registration', async (req: Request, res: Response) => {
         const data = req.body;
-        console.log(data);
 
-        const successful = await registration(data);
-
-        if(successful){
-            res.status(200).json({
-                message: "GET request successful!",
-                // receivedText: text // Отправляем параметр обратно клиенту
-            });
+        enum message {
+            "Success" = 1,
+            "user already exists" = 2,
+            "Error" = 3,
+            "No data" = 4,
+            "invalid data" = 5
         }
 
-        res.status(500).json({
-            message: "incorrect data"
-        })
+        const successful: number = await registration(data);
+        let status: number = 500;
+
+        switch (successful) {
+            case message.Success:
+                status = 201;
+                break;
+            case message["user already exists"]:
+                status = 409;
+                break;
+            case message["No data"]:
+                status = 400;
+                break;
+            case message["Error"]:
+                status = 422;
+                break;
+            case message["invalid data"]:
+                status = 400;
 
 
+        }
 
-        // Registration(login, password).then(r => {
-        //     res.status(200).json({
-        //         message: "GET request successful!",
-        //         // receivedText: text // Отправляем параметр обратно клиенту
-        //     });
-        // });
+        res.status(status).json({
+            message: `${message[successful]}`,
+        });
 
 
     });
 
     app.post('/authorization', async (req, res) => {
-        // isValidToken();
 
-        // const data = req.body;
         const email = req.body.email;
         const password = req.body.password;
-
-        // запрос в бд, после полученные данные вставлять в user
-
-        // const userRepository = AppDataSource.getRepository(User);
-        // const userDB = await userRepository.findOneBy({id: UserId});
 
         const user = {
             password: password,
@@ -74,7 +72,16 @@ AppDataSource.initialize().then(async () => {
             res.status(500).json({
                 message: "incorrect data or User not found!"
             })
-        }else{
+        } else {
+
+            console.log("tyuio")
+            console.log(data.user.is_active)
+            if (!data.user.is_active) {
+                res.status(403).json({
+                    message: "user is blocked"
+                })
+                return;
+            }
             res.status(200).json(
                 {
                     text: "authorization successful!",
@@ -83,7 +90,6 @@ AppDataSource.initialize().then(async () => {
                 }
             );
         }
-
 
 
         // Получаем почту и пароль
@@ -96,31 +102,29 @@ AppDataSource.initialize().then(async () => {
 
     app.get('/getUserList', async (req, res) => {
 
-
         const token = req.body.token;
 
         if (isValidToken(token)) {
 
             //сделать проверку, что это админ!!!!!!!!!
-            if(isAdmin(token)){
-                console.log("adminn")
+            if (isAdmin(token)) {
+                // console.log("adminn")
                 const userRepository = AppDataSource.getRepository(User)
                 const users = await userRepository.find()
-                console.log(users);
+                // console.log(users);
                 res.status(200).json(
                     {
                         text: "getUserList successful!",
                         data: users
                     }
                 );
-            }else {
-                res.status(404).json({error: 'Ошибка доступа'})
+            } else {
+                res.status(403).json({error: 'Ошибка доступа'})
             }
 
 
-
         } else {
-            res.status(404).json({error: 'Не валидный токен'})
+            res.status(401).json({error: 'Не валидный токен'})
         }
 
 
@@ -130,6 +134,7 @@ AppDataSource.initialize().then(async () => {
 
 
     app.get('/getUserById', async (req, res) => {
+
         const data = req.body;
         const id = data.id;
         const token = data.token;
@@ -137,29 +142,28 @@ AppDataSource.initialize().then(async () => {
         let admin = false
 
 
-        if(isValidToken(token)) {
-            if(isAdmin(token)) {
+        if (isValidToken(token)) {
+            if (isAdmin(token)) {
                 admin = true
             }
 
-            if(!admin){
+            if (!admin) {
                 userId = getIdFromToken(token)
-                if(userId !== id){
-                    res.status(404).json({error: 'Ошибка доступа'})
+                if (userId !== id) {
+                    res.status(403).json({error: 'Ошибка доступа'})
                     return;
                 }
             }
 
 
             const userRepository = AppDataSource.getRepository(User);
-            const user = await userRepository.findOneBy({ id: id });
+            const user = await userRepository.findOneBy({id: id});
 
             res.status(200).json({user: user})
 
 
-
         } else {
-            res.status(404).json({error: 'Не валидный токен'})
+            res.status(401).json({error: 'Не валидный токен'})
         }
 
 
@@ -172,23 +176,23 @@ AppDataSource.initialize().then(async () => {
         const id = req.body.id;
         const token = req.body.token;
 
-        if(!id || !token){
-            res.status(404).json({error: 'Ошибка'})
+        if (!id || !token) {
+            res.status(400).json({error: 'Ошибка'})
         }
 
         let userId = null;
         let admin = false;
 
 
-        if(isValidToken(token)) {
-            if(isAdmin(token)) {
+        if (isValidToken(token)) {
+            if (isAdmin(token)) {
                 admin = true
             }
 
-            if(!admin){
+            if (!admin) {
                 userId = getIdFromToken(token)
-                if(userId !== id){
-                    res.status(404).json({error: 'Ошибка доступа'})
+                if (userId !== id) {
+                    res.status(403).json({error: 'Ошибка доступа'})
                     return;
                 }
             }
@@ -196,11 +200,12 @@ AppDataSource.initialize().then(async () => {
             await blockUser(id)
 
 
-
             res.status(200).json({error: `Пользователь под id: ${id} заблокирован`})
 
 
         }
+        res.status(500).json({error: 'Ошибка'})
+
 
         // блокирует пользователя, если запрос пришёл от самого пользователя или от администратора
     });
