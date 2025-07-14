@@ -16,5 +16,5 @@ COPY . .
 # Открываем порт
 EXPOSE 3000
 
-# Запуск с ts-node
-CMD ["npx", "ts-node", "src/index.ts"]
+# Запуск через npm, чтобы использовать установленные модули
+CMD ["npm", "run", "start"]
