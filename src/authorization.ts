@@ -2,9 +2,10 @@ import jwt from 'jsonwebtoken';
 import {AppDataSource} from "./data-source";
 import {User} from "./entity/User";
 import {verifyPassword} from "./passwordCrypt";
+import {AuthUserDto} from "./dto/auth-user.dto";
 
 
-export async function authorization(payload: any) {
+export async function authorization(payload: AuthUserDto) {
 
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOneBy(

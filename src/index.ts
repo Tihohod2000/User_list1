@@ -3,7 +3,7 @@ import {AppDataSource} from "./data-source"
 import {seedAdmin} from "./seedAdmin";
 import userRoutes from "./routes/user.routes";
 
-const PORT = process.env["PORT "] || 3000;
+const PORT = process.env["PORT"] || 3000;
 
 
 const app = express();
@@ -14,7 +14,7 @@ AppDataSource.initialize().then(async () => {
 
     await seedAdmin();
 
-    app.use(express.json()); // Для парсинга JSON
+    // app.use(express.json()); // Для парсинга JSON
     app.use(userRoutes);
     app.listen(PORT, () => {
         console.log(`✅ Сервер запущен: http://localhost:${PORT}`);

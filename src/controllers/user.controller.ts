@@ -5,6 +5,7 @@ import {getIdFromToken, isAdmin, isValidToken} from "../validationToken";
 import {AppDataSource} from "../data-source";
 import {User} from "../entity/User";
 import {blockUser} from "../updataUser";
+import {AuthUserDto} from "../dto/auth-user.dto";
 
 
 export const registrationUser = async (req: Request, res: Response) => {
@@ -51,7 +52,7 @@ export const authorizationUser = async (req: Request, res: Response) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    const user = {
+    const user: AuthUserDto = {
         password: password,
         email: email,
     }
