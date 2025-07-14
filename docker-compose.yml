@@ -12,7 +12,6 @@ services:
       - "${APP_PORT:-3000}:3000"
     depends_on:
       - db
-    command: npx ts-node src/index.ts
 
   db:
     image: postgres:14.2
