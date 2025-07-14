@@ -15,11 +15,9 @@ export async function authorization(payload: AuthUserDto) {
 
     const isMatch = await verifyPassword(payload.password, String(user?.password))
 
-    // console.log("point 1")
     if(!isMatch){
         return undefined;
     }
-    console.log(user);
 
 
     if (user) {
@@ -34,7 +32,6 @@ export async function authorization(payload: AuthUserDto) {
             },
             secretKey, {expiresIn: '1h'});
 
-        console.log(token);
 
         return {
             token: token,
@@ -43,15 +40,5 @@ export async function authorization(payload: AuthUserDto) {
 
     }
     return undefined;
-
-    // throw new Error("User not found!");
-
-    // const payload = {
-    //     userId: 123,
-    //     username: 'user',
-    // };
-
-// Генерация токена
-
 }
 

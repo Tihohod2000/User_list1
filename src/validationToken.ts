@@ -6,9 +6,6 @@ const secretKey = 'my_secret_key';
 
 
 export function isValidToken(token: string) {
-    // const secretKey = 'my_secret_key'; // тот же, что использовался при создании токена
-
-    // const token = '...'; // токен, полученный от клиента
 
     try {
         const decoded = jwt.verify(token, secretKey);
@@ -25,9 +22,7 @@ export function isValidToken(token: string) {
 export function isAdmin(token: string) {
 
     try {
-        console.log('jopa');
         const decoded = jwt.verify(token, secretKey) as jwt.JwtPayload;
-        // console.log('Токен валиден:', decoded);
         if(decoded["role"] === 'admin'){
             return true;
         }else{

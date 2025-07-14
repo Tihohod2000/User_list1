@@ -6,34 +6,17 @@ import {hashPassword} from "./passwordCrypt";
 export async function registration(
     userData: any) {
 
-    // В объекте должно быть:
-    // ФИО
-    // Дата рождения
-    // Email
-    // пароль
-
-    // Статус default true
-    // Роль default user
-
-
-    // Если есть все данные,
-    // хэшировать пароль,
-    // записать данные в БД
-
-
     if (!userData) {
         return 4;
     }
 
     if(!userData.full_name || !userData.birth_date || !userData.email || !userData.password) return 4;
 
-    console.log("Всё есть!!!");
 
     if(userData.full_name.split(" ").length != 3) {
         console.log("ФИО должно состоять из 3 слов");
         return 5;
     }
-
 
     const passwordHash = await hashPassword(userData.password);
 
@@ -58,11 +41,5 @@ export async function registration(
     console.log('Пользователь создан:', newUser);
 
     return 1;
-
-
-
-
-
-
 }
 

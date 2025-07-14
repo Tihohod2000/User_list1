@@ -66,8 +66,6 @@ export const authorizationUser = async (req: Request, res: Response) => {
         })
     } else {
 
-        console.log("tyuio")
-        console.log(data.user.is_active)
         if (!data.user.is_active) {
             res.status(403).json({
                 message: "user is blocked"
@@ -89,13 +87,10 @@ export const getUserList = async (req: Request, res: Response) => {
     const token = req.body.token;
 
     if (isValidToken(token)) {
-
-        //сделать проверку, что это админ!!!!!!!!!
         if (isAdmin(token)) {
-            // console.log("adminn")
             const userRepository = AppDataSource.getRepository(User)
             const users = await userRepository.find()
-            // console.log(users);
+
             res.status(200).json(
                 {
                     text: "getUserList successful!",
@@ -105,8 +100,6 @@ export const getUserList = async (req: Request, res: Response) => {
         } else {
             res.status(403).json({error: 'Ошибка доступа'})
         }
-
-
     } else {
         res.status(401).json({error: 'Не валидный токен'})
     }
@@ -118,7 +111,6 @@ export const getUserById = async (req: Request, res: Response) => {
     const token = data.token;
     let userId;
     let admin = false
-
 
     if (isValidToken(token)) {
         if (isAdmin(token)) {
@@ -133,12 +125,10 @@ export const getUserById = async (req: Request, res: Response) => {
             }
         }
 
-
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOneBy({id: id});
 
         res.status(200).json({user: user})
-
 
     } else {
         res.status(401).json({error: 'Не валидный токен'})
@@ -158,7 +148,6 @@ export const BlockUser = async (req: Request, res: Response) => {
     let userId = null;
     let admin = false;
 
-
     if (isValidToken(token)) {
         if (isAdmin(token)) {
             admin = true
@@ -174,11 +163,7 @@ export const BlockUser = async (req: Request, res: Response) => {
 
         await blockUser(id)
 
-
         res.status(200).json({error: `Пользователь под id: ${id} заблокирован`})
-
-
     }
     res.status(500).json({error: 'Ошибка'})
-
 };

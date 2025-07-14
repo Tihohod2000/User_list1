@@ -11,15 +11,3 @@ export async function hashPassword(password: string): Promise<string> {
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
     return await bcrypt.compare(password, hash);
 }
-
-
-// Пример использования
-// (async () => {
-//     const password = '123';
-//     const hashed = await hashPassword(password);
-//
-//     console.log('Хеш:', hashed);
-//
-//     const isMatch = await verifyPassword('123', hashed);
-//     console.log('Совпадает?', isMatch);
-// })();
