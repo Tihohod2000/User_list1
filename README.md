@@ -103,9 +103,9 @@ http://localhost:3000/BlockUse
 
 При первом запуске автоматически в БД добавляется администратор:
 ```
-            "full_name": "Admin",
-            "email": "admin@mail.ru",
-            "password": "123",
-            "role": "admin"
+"full_name": "Admin",
+"email": "admin@mail.ru",
+"password": "123",
+"role": "admin"
 ```
 
