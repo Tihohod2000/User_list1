@@ -5,6 +5,7 @@ import {getIdFromToken, isAdmin, isValidToken} from "./validationToken"
 import {authorization} from "./authorization";
 import {registration} from "./registration";
 import {blockUser} from "./updataUser";
+import {seedAdmin} from "./seedAdmin";
 
 const PORT = 3000;
 
@@ -14,6 +15,8 @@ const app = express();
 app.use(express.json());
 
 AppDataSource.initialize().then(async () => {
+
+    await seedAdmin();
 
     app.post('/registration', async (req: Request, res: Response) => {
         const data = req.body;
