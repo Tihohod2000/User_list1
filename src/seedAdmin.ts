@@ -6,13 +6,13 @@ import {hashPassword} from "./passwordCrypt";
 export async function seedAdmin() {
     const userRepository = AppDataSource.getRepository(User);
 
-    const count = await userRepository.count();
+    const count = await userRepository.count({where: {role: "admin"}});
+
     // console.log("Количество записей в бд");
     // console.log(count);
     if (count === 0) {
         const password = await hashPassword("123");
         const admin = new User();
-
 
         admin.full_name = "Admin";
         admin.birth_date = new Date();
