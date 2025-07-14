@@ -1,29 +1,29 @@
-#version: '3.8'
+version: '3.8'
 
 services:
-#  app:
-#    build:
-#      context: .
-#      target: ${TARGET:-development}
-#    env_file:
-#      - .env
-#    volumes:
-#      - ${PWD:-./}:/appdocker-compose up -ddocker-compose up -d
-#    ports:
-#      - ${APP_PORT}:3000
-#    depends_on:
-#      - db
+  app:
+    build:
+      context: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      - db
+    command: npx ts-node src/index.ts
+
   db:
     image: postgres:14.2
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - data:/var/lib/postgresql/data
     ports:
-      - ${DB_PORT}:5432
+      - "${DB_PORT:-5432}:5432"
 
 volumes:
   data:
