@@ -18,14 +18,13 @@
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.25",
     "typescript": "^5.8.3",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.0.12",
-    "jsonwebtoken": "^9.0.2",
-    "typescript": "^5.8.3"
+    "@types/node": "^24.0.12"
   }
 }

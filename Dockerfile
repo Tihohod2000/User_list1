@@ -4,9 +4,8 @@ FROM node:20
 WORKDIR /app
 
 # Указываем, что среда разработки
-ENV NODE_ENV=development
+#ENV NODE_ENV=development
 
-# Копируем package.json и устанавливаем зависимости (включая devDependencies)
 COPY package*.json ./
 RUN npm install
 
