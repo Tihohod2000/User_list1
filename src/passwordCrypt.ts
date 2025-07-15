@@ -3,8 +3,7 @@ import bcrypt from 'bcrypt';
 // Хеширование пароля
 export async function hashPassword(password: string): Promise<string> {
     const saltRounds = 10; // чем больше — тем безопаснее, но медленнее
-    const hashed = await bcrypt.hash(password, saltRounds);
-    return hashed;
+    return await bcrypt.hash(password, saltRounds);
 }
 
 // Проверка пароля
